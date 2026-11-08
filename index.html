@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dantelove</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-black text-white min-h-screen flex flex-col justify-between p-4 font-sans">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between py-3 border-b border-zinc-800">
+        <div class="flex items-center space-x-2">
+            <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-2 rounded-xl font-bold text-lg">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">Dantelove</span>
+        </div>
+        <button onclick="configurarApiKey()" class="text-zinc-400 hover:text-white text-sm">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-6 my-auto">
+        
+        <!-- Zona de Carga de Captura -->
+        <div class="border-2 border-dashed border-zinc-700 rounded-2xl p-6 text-center bg-zinc-900/50 relative hover:border-pink-500 transition cursor-pointer" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="mostrarVistaPrevia(event)">
+            <div id="uploadContent" class="space-y-2">
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-pink-500"></i>
+                <p class="text-sm font-medium text-zinc-300">Sube captura de WhatsApp o IG</p>
+                <p class="text-xs text-zinc-500">Toca aquí para seleccionar imagen</p>
+            </div>
+            <div id="previewContainer" class="hidden relative">
+                <img id="imagePreview" class="max-h-48 mx-auto rounded-lg object-contain">
+                <p class="text-xs text-pink-400 mt-2 font-semibold"><i class="fa-solid fa-check-circle"></i> Captura lista</p>
+            </div>
+        </div>
+
+        <!-- Selector de Estilos (Los 4 solicitados) -->
+        <div class="space-y-2">
+            <label class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Elige tu estilo:</label>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="generarRespuesta('enamorado')" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-pink-500 text-sm font-medium flex items-center space-x-2 transition">
+                    <span class="text-pink-500">❤️</span> <span>Enamorado</span>
+                </button>
+                <button onclick="generarRespuesta('provocativo')" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-pink-500 text-sm font-medium flex items-center space-x-2 transition">
+                    <span class="text-purple-500">🔥</span> <span>Provocativo</span>
+                </button>
+                <button onclick="generarRespuesta('romantico')" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-pink-500 text-sm font-medium flex items-center space-x-2 transition">
+                    <span class="text-red-400">💘</span> <span>Romántico Deep</span>
+                </button>
+                <button onclick="generarRespuesta('salvada_epica')" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-pink-500 text-sm font-medium flex items-center space-x-2 transition">
+                    <span class="text-yellow-400">⚡</span> <span>Salvada Épica</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultados Generados -->
+        <div id="resultBox" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-pink-400 uppercase">Respuesta Sugerida:</span>
+                <button onclick="copiarTexto()" class="text-xs text-zinc-400 hover:text-white"><i class="fa-regular fa-copy"></i> Copiar</button>
+            </div>
+            <p id="responseText" class="text-sm text-zinc-200 select-all"></p>
+        </div>
+
+    </main>
+
+    <!-- Footer / Creditos -->
+    <footer class="text-center py-2 text-xs text-zinc-600">
+        Dantelove • Privado & Exclusivo
+    </footer>
+
+    <!-- Script de Lógica -->
+    <script>
+        let imagenBase64 = null;
+
+        function mostrarVistaPrevia(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagenBase64 = e.target.result;
+                    document.getElementById('imagePreview').src = imagenBase64;
+                    document.getElementById('uploadContent').classList.add('hidden');
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function configurarApiKey() {
+            let apiKey = prompt("Introduce tu OpenAI API Key (Se guarda solo en tu navegador):", localStorage.getItem('openai_key') || '');
+            if (apiKey) {
+                localStorage.setItem('openai_key', apiKey.trim());
+                alert("¡API Key guardada con éxito!");
+            }
+        }
+
+        async function generarRespuesta(estilo) {
+            const apiKey = localStorage.getItem('openai_key');
+            if (!apiKey) {
+                alert("Por favor configura primero tu OpenAI API Key haciendo clic en la rueda dentada arriba a la derecha.");
+                configurarApiKey();
+                return;
+            }
+            if (!imagenBase64) {
+                alert("Sube una captura de pantalla primero.");
+                return;
+            }
+
+            document.getElementById('resultBox').classList.remove('hidden');
+            document.getElementById('responseText').innerText = "Generando respuesta perfecta...";
+
+            let promptTexto = "";
+            if (estilo === 'enamorado') promptTexto = "Analiza esta captura de chat (WhatsApp/IG) y genera una respuesta muy tierna, detallista y profundamente enamorada.";
+            if (estilo === 'provocativo') promptTexto = "Analiza esta captura de chat y genera una respuesta coqueta, sexy, sutilmente provocativa y con mucha tensión romántica.";
+            if (estilo === 'romantico') promptTexto = "Analiza esta captura de chat y genera una respuesta romántica, poética y cautivadora.";
+            if (estilo === 'salvada_epica') promptTexto = "Analiza esta captura de chat donde la conversación está difícil o fría, y genera una respuesta ingeniosa, divertida o segura de ti mismo que logre 'salvar' la charla de forma épica.";
+
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o",
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    { type: "text", text: promptTexto },
+                                    { type: "image_url", image_url: { url: imagenBase64 } }
+                                ]
+                            }
+                        ],
+                        max_tokens: 300
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices.length > 0) {
+                    document.getElementById('responseText').innerText = data.choices[0].message.content;
+                } else {
+                    document.getElementById('responseText').innerText = "Error: " + (data.error?.message || "No se pudo generar.");
+                }
+            } catch (err) {
+                document.getElementById('responseText').innerText = "Error de conexión con OpenAI.";
+            }
+        }
+
+        function copiarTexto() {
+            const texto = document.getElementById('responseText').innerText;
+            navigator.clipboard.writeText(texto);
+            alert("¡Copiado al portapapeles!");
+        }
+    </script>
+</body>
+</html>
