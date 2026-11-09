@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dantelove</title>
-    <!-- Tailwind CSS para diseño moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-black text-white min-h-screen flex flex-col justify-between p-4 font-sans">
 
-    <!-- Header -->
     <header class="flex items-center justify-between py-3 border-b border-zinc-800">
         <div class="flex items-center space-x-2">
             <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-2 rounded-xl font-bold text-lg">
@@ -23,10 +21,7 @@
         </button>
     </header>
 
-    <!-- Contenido Principal -->
     <main class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-6 my-auto">
-        
-        <!-- Zona de Carga de Captura -->
         <div class="border-2 border-dashed border-zinc-700 rounded-2xl p-6 text-center bg-zinc-900/50 relative hover:border-pink-500 transition cursor-pointer" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="mostrarVistaPrevia(event)">
             <div id="uploadContent" class="space-y-2">
@@ -40,7 +35,6 @@
             </div>
         </div>
 
-        <!-- Selector de Estilos (Los 4 solicitados) -->
         <div class="space-y-2">
             <label class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Elige tu estilo:</label>
             <div class="grid grid-cols-2 gap-3">
@@ -59,7 +53,6 @@
             </div>
         </div>
 
-        <!-- Resultados Generados -->
         <div id="resultBox" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
             <div class="flex justify-between items-center">
                 <span class="text-xs font-bold text-pink-400 uppercase">Respuesta Sugerida:</span>
@@ -67,15 +60,12 @@
             </div>
             <p id="responseText" class="text-sm text-zinc-200 select-all"></p>
         </div>
-
     </main>
 
-    <!-- Footer / Creditos -->
     <footer class="text-center py-2 text-xs text-zinc-600">
-        Dantelove • Privado & Exclusivo
+        Dantelove • 100% Gratis
     </footer>
 
-    <!-- Script de Lógica -->
     <script>
         let imagenBase64 = null;
 
@@ -94,17 +84,17 @@
         }
 
         function configurarApiKey() {
-            let apiKey = prompt("Introduce tu OpenAI API Key (Se guarda solo en tu navegador):", localStorage.getItem('openai_key') || '');
+            let apiKey = prompt("Introduce tu Groq API Key gratuita:", localStorage.getItem('groq_key') || '');
             if (apiKey) {
-                localStorage.setItem('openai_key', apiKey.trim());
-                alert("¡API Key guardada con éxito!");
+                localStorage.setItem('groq_key', apiKey.trim());
+                alert("¡API Key de Groq guardada con éxito!");
             }
         }
 
         async function generarRespuesta(estilo) {
-            const apiKey = localStorage.getItem('openai_key');
+            const apiKey = localStorage.getItem('groq_key');
             if (!apiKey) {
-                alert("Por favor configura primero tu OpenAI API Key haciendo clic en la rueda dentada arriba a la derecha.");
+                alert("Configura primero tu Groq API Key gratuita haciendo clic en la tuerca.");
                 configurarApiKey();
                 return;
             }
@@ -116,21 +106,21 @@
             document.getElementById('resultBox').classList.remove('hidden');
             document.getElementById('responseText').innerText = "Generando respuesta perfecta...";
 
-            let promptTexto = "";
-            if (estilo === 'enamorado') promptTexto = "Analiza esta captura de chat (WhatsApp/IG) y genera una respuesta muy tierna, detallista y profundamente enamorada.";
-            if (estilo === 'provocativo') promptTexto = "Analiza esta captura de chat y genera una respuesta coqueta, sexy, sutilmente provocativa y con mucha tensión romántica.";
-            if (estilo === 'romantico') promptTexto = "Analiza esta captura de chat y genera una respuesta romántica, poética y cautivadora.";
-            if (estilo === 'salvada_epica') promptTexto = "Analiza esta captura de chat donde la conversación está difícil o fría, y genera una respuesta ingeniosa, divertida o segura de ti mismo que logre 'salvar' la charla de forma épica.";
+            let promptTexto = "Eres un experto en seducción y relaciones de pareja. Analiza esta captura de pantalla de chat y redacta una respuesta muy bien pensada para ligar.";
+            if (estilo === 'enamorado') promptTexto += " El estilo debe ser tierno, detallista y profundamente enamorado.";
+            if (estilo === 'provocativo') promptTexto += " El estilo debe ser coqueto, sexy y sutilmente provocativo.";
+            if (estilo === 'romantico') promptTexto += " El estilo debe ser romántico y poético.";
+            if (estilo === 'salvada_epica') promptTexto += " El estilo debe ser ingenioso, seguro y perfecto para salvar una charla fría o difícil.";
 
             try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "gpt-4o",
+                        model: "meta-llama/llama-3.2-11b-vision-preview",
                         messages: [
                             {
                                 role: "user",
@@ -151,7 +141,7 @@
                     document.getElementById('responseText').innerText = "Error: " + (data.error?.message || "No se pudo generar.");
                 }
             } catch (err) {
-                document.getElementById('responseText').innerText = "Error de conexión con OpenAI.";
+                document.getElementById('responseText').innerText = "Error de conexión.";
             }
         }
 
